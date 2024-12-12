@@ -10,8 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp
-public class Drive extends LinearOpMode {
-
+public class DriveSolo extends LinearOpMode {
 
     @Override
     public void runOpMode() {
@@ -35,7 +34,7 @@ public class Drive extends LinearOpMode {
         Servo claw = hardwareMap.get(Servo.class, "Claw");
 
 
-        GamepadEx armController = new GamepadEx(gamepad2);
+        GamepadEx armController = new GamepadEx(gamepad1);
         ToggleButtonReader armToggle = new ToggleButtonReader(armController, GamepadKeys.Button.RIGHT_BUMPER);
         ToggleButtonReader pivotToggle = new ToggleButtonReader(armController, GamepadKeys.Button.LEFT_BUMPER);
 
@@ -89,19 +88,16 @@ public class Drive extends LinearOpMode {
 
 
 
-            if (gamepad2.x) {
+            if (gamepad1.x) {
                 armState = DriveConstants.ArmStates.UP;
             }
-            if (gamepad2.b) {
+            if (gamepad1.b) {
                 armState = DriveConstants.ArmStates.IN;
-            }
-            if (gamepad2.y) {
-                armState= DriveConstants.ArmStates.HANG_RETRACT;
             }
 
             if (armState == DriveConstants.ArmStates.REST) {
-                extensionTarget += (gamepad2.dpad_right ? 25 : 0) - (gamepad2.dpad_left ? 25 : 0);
-                pitchTarget += (gamepad2.dpad_up ? 10 : 0) - (gamepad2.dpad_down ? 10 : 0);
+                extensionTarget += (gamepad1.dpad_right ? 25 : 0) - (gamepad1.dpad_left ? 25 : 0);
+                pitchTarget += (gamepad1.dpad_up ? 10 : 0) - (gamepad1.dpad_down ? 10 : 0);
             }
 
             if (armState == DriveConstants.ArmStates.UP) {
@@ -123,32 +119,23 @@ public class Drive extends LinearOpMode {
                 extensionTarget = 0;
                 if (Math.abs(extensionTarget - armExtendA.getCurrentPosition()) < 10) armState = DriveConstants.ArmStates.DOWN;
             }
-            if (armState == DriveConstants.ArmStates.HANG_RETRACT) {
-                extensionTarget = DriveConstants.HANG_EXTENSION;
-                if (Math.abs(extensionTarget - armExtendA.getCurrentPosition()) < 10) armState = DriveConstants.ArmStates.HANG_PIVOT;
-            }
 
-            if (armState == DriveConstants.ArmStates.HANG_PIVOT) {
-                pitchTarget = DriveConstants.HANG_PITCH;
-                if (Math.abs(pitchTarget - armPitch.getCurrentPosition()) < 10) armState = DriveConstants.ArmStates.REST;
-            }
-
-            extensionTarget = Math.max(Math.min(extensionTarget, DriveConstants.EXTENSION_LIMIT), pitchTarget > 300 ? -775 : 0);
+            extensionTarget = Math.max(Math.min(extensionTarget, DriveConstants.EXTENSION_LIMIT), 0);
             pitchTarget = Math.max(Math.min(pitchTarget, DriveConstants.PITCH_LIMIT), 0);
 
             double pow = (extensionTarget - armExtendA.getCurrentPosition()) * 0.01;
             armExtendA.setPower(pow);
             armExtendB.setPower(pow);
 
-//            if(gamepad2.a) {
+//            if(gamepad1.a) {
 //                pivotTarget = .3;
 //            } else {
-            pivotTarget = pivotToggle.getState() ? 0 : .3;
+                pivotTarget = pivotToggle.getState() ? 0 : .3;
 //            }
 
             pivot.setPosition(pivotTarget);
 
-            claw.setPosition(armToggle.getState() ? DriveConstants.CLAW_OPEN_POSITION : DriveConstants.CLAW_CLOSE_POSITION);
+            claw.setPosition(armToggle.getState() ? .7 : .92);
 
             armPitch.setPower((pitchTarget - armPitch.getCurrentPosition()) * 0.01);
 
